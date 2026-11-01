@@ -15,6 +15,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import common.util.lang.MultiLangCont;
+
 public class MusicPage extends Page implements SupPage<Music> {
 
 	private static final long serialVersionUID = 1L;
@@ -65,9 +67,9 @@ public class MusicPage extends Page implements SupPage<Music> {
 		setBounds(0, 0, x, y);
 
 		set(back, x, y, 0, 0, 200, 50);
-		set(jsp, x, y, 50, 100, 300, 800);
-		set(strt, x, y, 400, 100, 200, 50);
-		set(find, x, y, 400, 200, 200, 50);
+		set(jsp, x, y, 50, 200, 600, 1000);
+		set(strt, x, y, 50, 100, 200, 50);
+		set(find, x, y, 300, 100, 200, 50);
 	}
 
 	@Override
@@ -96,6 +98,25 @@ public class MusicPage extends Page implements SupPage<Music> {
 	}
 
 	private void ini() {
+		DefaultListCellRenderer renderer = new DefaultListCellRenderer();
+
+		jlf.setCellRenderer((list, music, index, isSelected, cellHasFocus) -> {
+			JLabel label = (JLabel) renderer.getListCellRendererComponent(
+					list, music, index, isSelected, cellHasFocus
+			);
+
+			if (music != null && music.id != null &&
+					Identifier.DEF.equals(music.id.pack)) {
+
+				String name = MultiLangCont.getStatic().MUSNAME.getCont(music.id.id);
+
+				if (name != null && !name.isEmpty())
+					label.setText(music + " - " + name);
+			}
+
+			return label;
+		});
+
 		add(back);
 		add(strt);
 		add(jsp);

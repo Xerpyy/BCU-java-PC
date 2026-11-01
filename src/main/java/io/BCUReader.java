@@ -332,7 +332,7 @@ public class BCUReader extends DataIO {
 							}
 							if (nl.equals("EnemyExplanation.txt")) {
 								Queue<String> qs = readLines(fl);
-								if(qs != null)
+								if (qs != null)
 									for (String str : qs) {
 										String[] strs = str.trim().split("\t");
 										Enemy e = UserProfile.getBCData().enemies.get(CommonStatic.parseIntN(strs[0]));
@@ -342,6 +342,34 @@ public class BCUReader extends DataIO {
 									}
 								continue;
 							}
+
+							if (nl.equals("MusicName.txt")) {
+								Queue<String> musicLines = readLines(fl);
+
+								if (musicLines != null) {
+									for (String line : musicLines) {
+										int separator = line.indexOf(" - ");
+
+										if (separator < 0)
+											continue;
+
+										String idStr = line.substring(0, separator).trim();
+										String name = line.substring(separator + 3).trim();
+
+										if (!CommonStatic.isInteger(idStr) || name.isEmpty())
+											continue;
+
+										MultiLangCont.getStatic().MUSNAME.put(
+												locale,
+												Integer.parseInt(idStr),
+												name
+										);
+									}
+								}
+
+								continue;
+							}
+
 							if (!nl.endsWith(".properties"))
 								continue;
 							MainLocale ml = new MainLocale(nl.split("\\.")[0] + "_" + ni);
