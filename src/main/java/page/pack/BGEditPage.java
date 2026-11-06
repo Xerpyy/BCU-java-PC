@@ -26,6 +26,9 @@ import java.io.IOException;
 import java.util.Vector;
 import java.util.stream.Collectors;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @SuppressWarnings({"ResultOfMethodCallIgnored", "ForLoopReplaceableByForEach"})
 public class BGEditPage extends Page {
 
@@ -50,6 +53,8 @@ public class BGEditPage extends Page {
 	private final JTF[] os = new JTF[3];
 	private final JComboBox<Integer> eff = new JComboBox<>();
 	private final JBTN reset = new JBTN(MainLocale.PAGE, "reset");
+
+	private final Map<Background, ImageIcon> thumbnailCache = new HashMap<>();
 
 	private final UserPack pack;
 	private BGViewPage bvp;
@@ -164,6 +169,7 @@ public class BGEditPage extends Page {
 			bgr.top = top.isSelected();
 			bgr.ic = 1;
 			bgr.load();
+			refreshThumbnail();
 		});
 
 		for (int i = 0; i < 4; i++) {
@@ -177,6 +183,7 @@ public class BGEditPage extends Page {
 					if (inp.length == 3)
 						bgr.cs[I] = new int[] { inp[0] & 255, inp[1] & 255, inp[2] & 255 };
 					setCSText(I);
+					refreshThumbnail();
 
 				}
 
@@ -201,6 +208,7 @@ public class BGEditPage extends Page {
 					}
 
 					setOSText(I, I % 3 == 2);
+					refreshThumbnail();
 				}
 			});
 		}
@@ -232,6 +240,7 @@ public class BGEditPage extends Page {
 					os[i].setEnabled(false);
 				}
 			}
+			refreshThumbnail();
 		});
 
 		reset.setLnr(e -> {
@@ -270,6 +279,7 @@ public class BGEditPage extends Page {
 	}
 
 	private void ini() {
+		setupBackgroundGallery();
 		add(back);
 		add(jspst);
 		add(jl);
@@ -414,7 +424,57 @@ public class BGEditPage extends Page {
 		}
 	}
 
+	private ImageIcon getThumbnail(Background bg) {
+		// Reuse an existing thumbnail if it has already been generated.
+		ImageIcon cached = thumbnailCache.get(bg);
+		if (cached != null)
+			return cached;
+		// Remember whether the background was already loaded.
+		boolean wasLoaded = bg.parts != null;
+		ImageIcon thumbnail;
+		try {
+			thumbnail = UtilPC.getBg(bg, 130, 75);
+		} finally {
+			// Avoid keeping newly loaded background resources in memory.
+			if (!wasLoaded && bg.parts != null)
+				bg.unload();
+		}
+		if (thumbnail != null)
+			thumbnailCache.put(bg, thumbnail);
+		return thumbnail;
+	}
+
+	private void setupBackgroundGallery() {
+		jlst.setLayoutOrientation(JList.HORIZONTAL_WRAP);
+		jlst.setVisibleRowCount(0);
+		// Approximate dimensions of each thumbnail entry.
+		jlst.setFixedCellWidth(150);
+		jlst.setFixedCellHeight(100);
+		DefaultListCellRenderer renderer = new DefaultListCellRenderer();
+		jlst.setCellRenderer((list, bg, index, isSelected, cellHasFocus) -> {
+			JLabel label = (JLabel) renderer.getListCellRendererComponent(
+					list, bg, index, isSelected, cellHasFocus
+			);
+			if (bg != null) {
+				label.setText(bg.id.toString());
+				label.setHorizontalTextPosition(JLabel.CENTER);
+				label.setVerticalTextPosition(JLabel.BOTTOM);
+				label.setHorizontalAlignment(JLabel.CENTER);
+				label.setIcon(getThumbnail(bg));
+			}
+			return label;
+		});
+	}
+
+	private void refreshThumbnail() {
+		if (bgr == null)
+			return;
+		thumbnailCache.remove(bgr);
+		jlst.repaint();
+	}
+
 	private void setList(Background bcgr) {
+		thumbnailCache.clear();
 		bgr = bcgr;
 		int ind = jlst.getSelectedIndex();
 		Background[] arr = pack.bgs.toArray();

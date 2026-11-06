@@ -120,64 +120,47 @@ public class CastleViewPage extends Page {
 		// Reuse an existing thumbnail if it has already been generated.
 		if (thumbnailCache.containsKey(castle))
 			return thumbnailCache.get(castle);
-
 		ImageIcon original = UtilPC.getIcon(castle.img);
-
 		if (original == null)
 			return null;
-
 		int originalWidth = original.getIconWidth();
 		int originalHeight = original.getIconHeight();
-
 		if (originalWidth <= 0 || originalHeight <= 0)
 			return null;
-
 		// Calculate a scale factor that preserves the aspect ratio.
 		double scale = Math.min(
 				100.0 / originalWidth,
 				75.0 / originalHeight
 		);
-
 		int width = Math.max(1, (int) (originalWidth * scale));
 		int height = Math.max(1, (int) (originalHeight * scale));
-
 		Image scaled = original.getImage().getScaledInstance(
 				width,
 				height,
 				Image.SCALE_SMOOTH
 		);
-
 		ImageIcon thumbnail = new ImageIcon(scaled);
-
 		thumbnailCache.put(castle, thumbnail);
-
 		return thumbnail;
 	}
-
 	private void setupCastleGallery() {
 		jlst.setLayoutOrientation(JList.HORIZONTAL_WRAP);
 		jlst.setVisibleRowCount(0);
-
 		// Approximate dimensions of each thumbnail entry.
 		jlst.setFixedCellWidth(130);
 		jlst.setFixedCellHeight(110);
-
 		DefaultListCellRenderer renderer = new DefaultListCellRenderer();
-
 		jlst.setCellRenderer((list, castle, index, isSelected, cellHasFocus) -> {
 			JLabel label = (JLabel) renderer.getListCellRendererComponent(
 					list, castle, index, isSelected, cellHasFocus
 			);
-
 			if (castle != null) {
 				label.setText(castle.getID().toString());
 				label.setHorizontalTextPosition(JLabel.CENTER);
 				label.setVerticalTextPosition(JLabel.BOTTOM);
 				label.setHorizontalAlignment(JLabel.CENTER);
-
 				label.setIcon(getThumbnail(castle));
 			}
-
 			return label;
 		});
 	}

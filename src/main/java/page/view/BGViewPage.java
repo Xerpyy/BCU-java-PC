@@ -15,6 +15,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class BGViewPage extends Page implements SupPage<Background> {
 
 	private static final long serialVersionUID = 1L;
@@ -24,6 +27,7 @@ public class BGViewPage extends Page implements SupPage<Background> {
 	private final JList<Background> jlst = new JList<>();
 	private final JScrollPane jspst = new JScrollPane(jlst);
 	private final JLabel jl = new JLabel();
+	private final Map<Background, ImageIcon> thumbnailCache = new HashMap<>();
 
 	public BGViewPage(Page p) {
 		super(p);
@@ -60,10 +64,10 @@ public class BGViewPage extends Page implements SupPage<Background> {
 	protected void resized(int x, int y) {
 		setBounds(0, 0, x, y);
 
-		set(back, x, y, 0, 0, 200, 50);
-		set(find, x, y, 400, 150, 200, 50);
-		set(jspst, x, y, 50, 100, 300, 1100);
-		set(jl, x, y, 650, 100, 1600, 1100);
+		set(back, x, y, 0, 0, 200, 50); //back button
+		set(find, x, y, 250, 00, 200, 50); //find stage button
+		set(jspst, x, y, 50, 100, 525, 1100); //list
+		set(jl, x, y, 650, 100, 1600, 1100); // preview
 	}
 
 	@Override
@@ -101,7 +105,49 @@ public class BGViewPage extends Page implements SupPage<Background> {
 		});
 	}
 
+	private ImageIcon getThumbnail(Background bg) {
+		ImageIcon cached = thumbnailCache.get(bg);
+		if (cached != null)
+			return cached;
+		// Check whether this background was already loaded.
+		boolean wasLoaded = bg.parts != null;
+		ImageIcon thumbnail;
+		try {
+			thumbnail = UtilPC.getBg(bg, 180, 100);
+		} finally {
+			// Only unload resources that this thumbnail generation loaded.
+			if (!wasLoaded && bg.parts != null)
+				bg.unload();
+		}
+		thumbnailCache.put(bg, thumbnail);
+		return thumbnail;
+	}
+
+	private void setupBackgroundGallery() {
+		jlst.setLayoutOrientation(JList.HORIZONTAL_WRAP);
+		jlst.setVisibleRowCount(0);
+		jlst.setFixedCellWidth(200);
+		jlst.setFixedCellHeight(125);
+
+		DefaultListCellRenderer renderer = new DefaultListCellRenderer();
+
+		jlst.setCellRenderer((list, bg, index, isSelected, cellHasFocus) -> {
+			JLabel label = (JLabel) renderer.getListCellRendererComponent(
+					list, bg, index, isSelected, cellHasFocus
+			);
+			if (bg != null) {
+				label.setText(bg.getID().toString());
+				label.setHorizontalTextPosition(JLabel.CENTER);
+				label.setVerticalTextPosition(JLabel.BOTTOM);
+				label.setHorizontalAlignment(JLabel.CENTER);
+				label.setIcon(getThumbnail(bg));
+			}
+			return label;
+		});
+	}
+
 	private void ini() {
+		setupBackgroundGallery();
 		add(back);
 		add(jspst);
 		add(jl);

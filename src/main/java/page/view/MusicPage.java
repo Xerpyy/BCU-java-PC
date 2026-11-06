@@ -67,7 +67,7 @@ public class MusicPage extends Page implements SupPage<Music> {
 		setBounds(0, 0, x, y);
 
 		set(back, x, y, 0, 0, 200, 50); //back
-		set(jsp, x, y, 50, 200, 800, 1000); // music list
+		set(jsp, x, y, 50, 200, 1000, 1000); // music list
 		set(strt, x, y, 50, 100, 200, 50); // start music
 		set(find, x, y, 550, 100, 200, 50); // find stage
 		set(stop, x, y, 300, 100, 200, 50); // stop music
