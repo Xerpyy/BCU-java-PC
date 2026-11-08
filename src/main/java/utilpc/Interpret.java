@@ -380,7 +380,7 @@ public class Interpret extends Data {
 
     public static List<ProcDisplay> getProc(MaskEntity du, double[] magnification) {
         boolean isEnemy = du instanceof MaskEnemy;
-        Formatter.Context ctx = new Formatter.Context(isEnemy, MainBCU.seconds, magnification);
+        Formatter.Context ctx = new Formatter.Context(isEnemy, MainBCU.seconds, magnification, CommonStatic.getConfig().lang);
         final boolean common = !(du instanceof CustomEntity) || ((CustomEntity) du).common;
 
         List<ProcDisplay> l = new ArrayList<>();
